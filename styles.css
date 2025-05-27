@@ -1,0 +1,222 @@
+/* Main Dashboard Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Header Styles */
+.dashboard-header {
+    background: linear-gradient(90deg, #1e3a8a 0%, #2563eb 100%);
+    color: white;
+    padding: 1rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.company-logo {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: white;
+    margin-right: 0.75rem;
+}
+
+.company-logo svg {
+    color: #1e3a8a;
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+.header-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.header-subtitle {
+    color: #bfdbfe;
+}
+
+.header-button {
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    background-color: #1e40af;
+    transition: background-color 0.2s;
+}
+
+.header-button:hover {
+    background-color: #1e3a8a;
+}
+
+/* Filter Section Styles */
+.filters-container {
+    background-color: white;
+    padding: 1rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.filter-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.25rem;
+}
+
+.filter-select {
+    width: 100%;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    padding: 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* Chart Card Styles */
+.chart-card {
+    background-color: white;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.chart-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.chart-container {
+    height: 16rem;
+}
+
+/* Table Styles */
+.table-container {
+    overflow-x: auto;
+}
+
+.data-table {
+    min-width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.table-header {
+    background-color: #f9fafb;
+}
+
+.table-header th {
+    padding: 0.75rem 1.5rem;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.table-body tr {
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.table-body tr:nth-child(even) {
+    background-color: #f9fafb;
+}
+
+.table-body tr.low-connectivity {
+    background-color: #fee2e2;
+}
+
+.table-cell {
+    padding: 0.5rem 1.5rem;
+    white-space: nowrap;
+    font-size: 0.875rem;
+}
+
+.cell-name {
+    font-weight: 500;
+    color: #111827;
+}
+
+.cell-normal {
+    color: #6b7280;
+}
+
+.cell-alert {
+    color: #ef4444;
+}
+
+/* Progress Bar Styles */
+.progress-container {
+    display: flex;
+    align-items: center;
+}
+
+.progress-value {
+    margin-right: 0.5rem;
+}
+
+.progress-bar-bg {
+    width: 6rem;
+    height: 0.5rem;
+    background-color: #e5e7eb;
+    border-radius: 9999px;
+}
+
+.progress-bar {
+    height: 0.5rem;
+    border-radius: 9999px;
+}
+
+.progress-high {
+    background-color: #10b981;
+}
+
+.progress-medium {
+    background-color: #3b82f6;
+}
+
+.progress-low {
+    background-color: #f59e0b;
+}
+
+.progress-critical {
+    background-color: #ef4444;
+}
+
+/* Empty State Styles */
+.empty-state {
+    color: #9ca3af;
+    text-align: center;
+}
+
+.empty-state-icon {
+    height: 3rem;
+    width: 3rem;
+    margin: 0 auto 0.5rem auto;
+}
+
+/* Responsive Grid */
+@media (min-width: 768px) {
+    .grid-cols-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    
+    .grid-cols-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    
+    .col-span-2 {
+        grid-column: span 2 / span 2;
+    }
+}
+
+/* Animation */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
