@@ -11,68 +11,102 @@ Cada repositorio tiene un entorno de pruebas QA y uno de producción, y sigue un
 
 - `main`: código estable en producción.
 - `dev`: código aprobado y desplegado para pruebas funcionales.
-- `feature/*`, `bugfix/*`: ramas temporales para trabajo individual.
+- `feature/*`, `bugfix/*`, `hotfix/*`: ramas temporales para trabajo individual, se eliminan después del merge
 
 ---
 
-## Flujo de Trabajo por Repositorio
-
-### 1. Creación de Ramas
+## Creación de Ramas
 
 Todo el trabajo debe realizarse en ramas a partir de `dev`. Las ramas deben seguir el formato:
 
 - `feature/123-descripcion-clara`
 - `bugfix/456-ajuste-en-header`
+- `hotfix/fix-env-prod-db-url`
 
 
 Incluye el número de issue o tarea en el nombre si es posible.
 
 ---
 
-### 2. Commits
+## Buenas prácticas de commits
 
-Usa mensajes de commit claros, consistentes y en tiempo presente. Se recomienda seguir el formato:
+### Formato recomendado:
 
+```
+<tipo>(<área>): <mensaje corto en presente>
+```
 
-`<tipo>(\<módulo>): <mensaje corto>`
+### Tipos comunes:
 
+* `feat`: nueva funcionalidad
+* `fix`: corrección de bug
+* `docs`: cambios en documentación
+* `refactor`: mejoras de código sin cambiar comportamiento
+* `style`: cambios de estilo (indentación, formato)
+* `test`: agregar o modificar tests
 
-Ejemplos:
+### Ejemplos:
 
-- `feat(auth): agrega autenticación con Google`
-- `fix(api): corrige error en validación de entrada`
-- `refactor(ui): mejora estructura del componente Header`
+* `feat(auth): agregar login con Google`
+* `fix(api): corregir error 500 al subir archivo`
+* `refactor(ui): separar componente Header`
 
-Tipos comunes: `feat`, `fix`, `docs`, `refactor`, `style`, `test`.
+### Reglas:
+
+* Usa **mensajes descriptivos pero breves**.
+* Commits pequeños y frecuentes > uno gigante.
+* Usa inglés si el equipo es mixto (opcional).
 
 ---
 
-### 3. Pull Requests (PRs)
+## Pull Requests (PRs)
 
-#### Apertura de PR
+### Buenas prácticas:
 
-- El código se debe subir a una rama y abrir un PR contra `dev`.
-- Asigna al menos un revisor.
-- Incluye una descripción clara del cambio, pasos para probarlo, y contexto si aplica.
+#### Al abrir un PR:
 
-Ejemplo de plantilla:
+* Usa título claro: `Agrega login con Google (#123)`
+* Describe qué hace el PR, cómo probarlo, y si impacta otras partes.
+* Añade capturas si es un cambio visual.
+* Asigna reviewers.
 
+#### Checklist típico en la descripción:
+
+```markdown
 ### ¿Qué hace este PR?
-Implementa el flujo de recuperación de contraseña.
+- Agrega login con Google a frontend y backend
 
 ### ¿Cómo probar?
-1. Ir a /forgot-password
-2. Ingresar un correo válido
-3. Confirmar que se envía el correo de recuperación
+1. Ejecutar app
+2. Ir a /login
+3. Ver botón de Google
 
 ### ¿Impacta producción?
-No. Solo se despliega a QA inicialmente.
+No, aún está bajo feature flag.
+```
 
-#### Revisión
+#### Al revisar un PR:
 
-* Todo PR debe ser aprobado por al menos un miembro del equipo.
-* Comenta cualquier duda o sugerencia de mejora.
-* Usa sugerencias automáticas (`suggestion`) para cambios menores.
+* Comenta dudas o mejoras sugeridas.
+* No critiques personas, revisa código.
+* Usa sugerencias si es algo menor:
+
+  ```suggestion
+  Cambiar a `let` ya que se reasigna
+  ```
+
+---
+
+## Buenas prácticas adicionales
+
+* Siempre **revisa antes de hacer merge** (`git diff`).
+* Usa `git pull --rebase` para mantener historial limpio.
+* Nunca hagas `force push` en ramas compartidas sin avisar.
+* Elimina ramas remotas después de merge:
+
+  ```bash
+  git push origin --delete feature/123-login-con-google
+  ```
 
 ---
 
@@ -93,6 +127,38 @@ Adaptamos el modelo propuesto por Martin Fowler para definir **cómo se toman de
 * **Ship** → corrección de typo, fix menor de UI, copy, comentarios.
 * **Show** → refactor que no cambia funcionalidad, cambio visual visible.
 * **Ask** → eliminar funcionalidad, cambios en arquitectura o APIs públicas.
+
+---
+
+## Flujo de Trabajo básico
+
+1. **Sincroniza `main` y `dev`**:
+
+   ```bash
+   git checkout main
+   git pull origin main
+   git checkout dev
+   git pull origin dev
+   ```
+
+2. **Crea tu rama desde `dev`**:
+
+   ```bash
+   git checkout dev
+   git checkout -b feature/123-login-con-google
+   ```
+
+3. **Desarrolla y haz commits frecuentes** (ver sección de commits)
+
+4. **Haz push a tu rama**:
+
+   ```bash
+   git push origin feature/123-login-con-google
+   ```
+
+5. **Abre un Pull Request (PR) hacia `dev` (si aplica)** con título claro y descripción.
+
+6. **Al aprobarse, se hace merge.** QA se prueba, y luego se abre PR de `dev` → `main`.
 
 ---
 
@@ -156,20 +222,12 @@ Variables de entorno (`NEXT_PUBLIC_API_URL`) se configuran en Vercel para apunta
 
 ## Reglas Generales
 
-* **En general, no se hace `push` directo a `dev` o `main`.**
+* En general, no se hace `push` directo a `dev` o `main`.
   * **Excepción:** cambios de bajo riesgo clasificados como **Ship** (por ejemplo, ajustes de copy, comentarios, typos) pueden ir directo a `dev`, siempre que pasen CI.
 * Toda integración relevante debe pasar por PR y revisión.
 * Las ramas deben eliminarse una vez mergeadas.
 * Todos los commits deben pasar tests y linter en CI.
 * Se recomienda mantener los PRs pequeños, enfocados y clasificados correctamente según *Ship / Show / Ask*.
-
----
-
-## Recomendaciones Técnicas
-
-* Usa `rebase` en lugar de `merge` para mantener historial limpio (`git pull --rebase`).
-* Revisa tus cambios antes de hacer PR: `git diff` y `npm run lint`.
-* Configura correctamente tus variables de entorno en local y en los entornos remotos.
 
 ---
 
