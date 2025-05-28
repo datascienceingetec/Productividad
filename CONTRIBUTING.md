@@ -1,9 +1,4 @@
-# Guía de Contribución y Despliegue
-
-Este documento describe las reglas y el flujo de trabajo que se deben seguir para colaborar en este proyecto, que está compuesto por dos repositorios separados:
-
-- `frontend/` – Aplicación web desplegada en Vercel.
-- `backend/` – API REST, desplegada en Google Cloud Platform (GCP) mediante contenedores Docker.
+# Guía de Contribución
 
 ## Estructura General
 
@@ -162,51 +157,6 @@ Adaptamos el modelo propuesto por Martin Fowler para definir **cómo se toman de
 
 ---
 
-## Despliegue
-
-### Backend (GCP + Docker)
-
-#### Repositorio: `backend/`
-
-Desplegado a **Cloud Run** en GCP usando contenedores Docker.
-
-* `push` o `merge` a `dev` = Deploy automático a QA (**Ship/Show** según el tipo de cambio).
-* `push` o `merge` a `main` = Deploy a producción (**Show/Ask**, según el impacto del cambio).
-
-Workflow CI/CD en `.github/workflows/backend-ci-cd.yml`:
-
-* Linter y tests
-* Build y push de la imagen a Artifact Registry
-* Deploy automático a Cloud Run
-
-Credenciales de GCP se gestionan a través del secreto `GCP_CREDENTIALS`.
-
-La URL del backend dev y producción se define en variables de entorno para consumo por parte del frontend.
-
----
-
-### Frontend (Vercel)
-
-#### Repositorio: `frontend/`
-
-Este repositorio está conectado directamente a Vercel.
-
-* `push` a `dev` = Deploy automático al entorno de desarrollo en Vercel (**Ship/Show**).
-* `push` a `main` = Deploy a producción (**Show/Ask**).
-
-Variables de entorno (`NEXT_PUBLIC_API_URL`) se configuran en Vercel para apuntar al backend correspondiente.
-
----
-
-## Entornos
-
-| Rama   | Backend (GCP)                | Frontend (Vercel)             |
-| ------ | ---------------------------- | ----------------------------- |
-| `dev`   | `https://backend-dev.run.app` | `https://dev.tuapp.vercel.app` |
-| `main` | `https://backend.tuapp.com`  | `https://tuapp.vercel.app`    |
-
----
-
 ## Ciclo de Release
 
 1. Se finaliza una feature y se mergea a `dev`.
@@ -233,8 +183,6 @@ Variables de entorno (`NEXT_PUBLIC_API_URL`) se configuran en Vercel para apunta
 
 ## Recursos
 
-* [Conventional Commits](https://www.conventionalcommits.org)
-* [GitHub Actions Docs](https://docs.github.com/en/actions)
 * [Vercel Docs](https://vercel.com/docs)
 * [Google Cloud Run Docs](https://cloud.google.com/run/docs)
 
