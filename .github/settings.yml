@@ -29,10 +29,10 @@ branches:
           - lint
           - test
       enforce_admins: true
-      required_pull_request_reviews: null  # Permite push directo para cambios tipo Ship
+      required_pull_request_reviews: null
       restrictions: null
       required_linear_history: true
-      allow_force_pushes: false
+      allow_force_pushes: true
       allow_deletions: false
 
   - name: 'feature/*'
