@@ -25,14 +25,15 @@ def main() -> None:
     required_files = params["REQUIRED_FILES"]
     file_names = [required_files[key]["name"] for key in required_files]
 
-    source_drive = Path(os.getenv("SOURCE_DRIVE", "scripts/sample_data"))
+    credentials_file = Path(os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "credentials.json"))
+    folder_id = os.getenv("DRIVE_FOLDER_ID", "")
     logger = setup_logger('.log')
 
     with tempfile.TemporaryDirectory() as tmpdirname:
         tmp_path = Path(tmpdirname)
         logger.info("Starting productivity script")
 
-        connector = DriveConnector(logger, source_drive)
+        connector = DriveConnector(logger, credentials_file, folder_id)
         connector.download_files(file_names, tmp_path)
 
         validator = FileValidator(list(required_files.values()), logger)
