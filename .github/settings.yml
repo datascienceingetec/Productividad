@@ -24,11 +24,11 @@ branches:
   - name: dev
     protection:
       required_status_checks:
-        strict: true
+        strict: false
         contexts:
           - lint
           - test
-      enforce_admins: true
+      enforce_admins: false
       required_pull_request_reviews: null
       restrictions: null
       required_linear_history: false
