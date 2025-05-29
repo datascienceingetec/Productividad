@@ -122,6 +122,51 @@ Esta sección proporciona instrucciones sobre cómo configurar y ejecutar el pro
         *   Alternativamente, desarrollar una API de backend simple (quizás usando Flask o FastAPI, potencialmente aprovechando el placeholder `app/main.py`) para servir los datos de productividad al frontend.
     *   Este paso de integración aún no está implementado en la versión actual.
 
+## Procesamiento Automatizado (`automated_processing.py`)
+
+Este script (`scripts/automated_processing.py`) proporciona una forma automatizada de ejecutar el proceso de cálculo de productividad. Su objetivo es monitorear una estructura de carpetas, validar los archivos de entrada necesarios y luego ejecutar los pasos de limpieza y cálculo de forma desatendida. Este script está diseñado para cumplir con los requisitos de la Historia de Usuario HU-AUTO-001.
+
+### Configuración (`scripts/automation_config.json`)
+
+El comportamiento del script de automatización se controla a través del archivo `scripts/automation_config.json`. Este archivo centraliza todos los parámetros necesarios para la ejecución.
+
+Campos clave configurables incluyen:
+
+*   **`input_base_path`**: Directorio base donde el script buscará las carpetas de datos de entrada (organizadas por `YYYY-MM`).
+*   **`output_base_path`**: Directorio base opcional donde se pueden copiar los informes generados.
+*   **`log_file_path`**: Ruta completa al archivo de log principal del script (ej: `automation.log`).
+*   **`processed_files_log_path`**: Ruta al archivo de log que registra las carpetas (períodos) que ya han sido procesadas (ej: `processed_folders.log`).
+*   **`run_for_current_date`**: Booleano (`true`/`false`). Si es `true`, el script procesará los datos para el año y mes actuales. Si es `false`, usará `specific_year` y `specific_month`.
+*   **`specific_year`**, **`specific_month`**: Año y mes específicos para procesar cuando `run_for_current_date` es `false`.
+*   **`required_files`**: Un diccionario que define los nombres exactos de los archivos de entrada esperados. Incluye claves como:
+    *   `main_excel_file_raw_name`: Nombre del archivo Excel principal sin procesar (ej: `raw_data.xlsx`).
+    *   `informe_personal`: Nombre del archivo con la información del personal (ej: `INFORME_PERSONAL.xlsx`).
+    *   `autodesk`, `meetings`, `chats`, `vpn`: Nombres de los archivos de datos de estas fuentes.
+*   **`data_cleaned_excel_name`**: Nombre que se le dará al archivo Excel una vez limpiado (ej: `data_cleaned.xlsx`).
+*   **`EMAILS_TO_DELETE`**: Lista de correos electrónicos a excluir del análisis (heredado de la configuración original).
+*   **`COEFFICIENTS`**: Objeto con los coeficientes para el cálculo de productividad, categorizados por tipo de empleado (heredado de la configuración original).
+*   **`logging_level`**: Define el nivel de detalle para los logs (ej: "INFO", "DEBUG", "ERROR").
+
+**Credenciales:** El archivo de configuración puede contener una sección `placeholder_credentials`. Es importante destacar que para una integración real con servicios en la nube (como Google Drive), esta sección necesitaría ser reemplazada por un mecanismo seguro de gestión de credenciales.
+
+### Cómo Ejecutar el Script Automatizado
+
+1.  **Asegúrese** de que `scripts/automation_config.json` esté correctamente configurado con las rutas y parámetros deseados.
+2.  Desde el directorio raíz del proyecto, ejecute el script mediante el comando:
+    ```bash
+    python scripts/automated_processing.py
+    ```
+3.  El script buscará datos en la subcarpeta `YYYY-MM` (correspondiente al período de procesamiento configurado) dentro del `input_base_path`.
+
+### Seguimiento y Logs
+
+El script genera logs detallados para el seguimiento de su operación y para la resolución de problemas:
+
+*   **`automation.log`** (o la ruta especificada en `log_file_path`): Contiene un registro detallado de todas las operaciones, validaciones, éxitos y errores que ocurren durante la ejecución del script. Es el primer lugar para revisar si algo inesperado sucede.
+*   **`processed_folders.log`** (o la ruta especificada en `processed_files_log_path`): Mantiene un historial de las carpetas (períodos `YYYY-MM`) que han sido procesadas, indicando si el procesamiento fue exitoso ("SUCCESS") o fallido ("FAILED" con un motivo). Esto evita que el script reprocese innecesariamente períodos que ya se completaron con éxito.
+
+Es crucial revisar estos archivos de log para monitorear la salud y el correcto funcionamiento del proceso automatizado.
+
 ## Estructura del Proyecto
 
 El repositorio está organizado en varios directorios clave:
