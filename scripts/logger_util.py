@@ -19,3 +19,9 @@ def setup_logger(log_path: str) -> logging.Logger:
         logger.handlers.clear()
     logger.addHandler(handler)
     return logger
+
+
+def close_logger(logger: logging.Logger) -> None:
+    for handler in logger.handlers:
+        handler.close()
+        logger.removeHandler(handler)

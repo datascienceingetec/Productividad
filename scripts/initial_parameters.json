@@ -84,6 +84,37 @@
             "Autodesk": 0.0,
             "VPN": 0.25
         }
+    },
+    "REQUIRED_FILES": {
+        "productivity": {
+            "name": "Productividad_Google.xlsx",
+            "format": "xlsx",
+            "columns": []
+        },
+        "autodesk": {
+            "name": "Autodesk.xlsx",
+            "format": "xlsx",
+            "columns": []
+        },
+        "meetings": {
+            "name": "Meetings.xlsx",
+            "format": "xlsx",
+            "columns": []
+        },
+        "chats": {
+            "name": "chats_source.csv",
+            "format": "csv",
+            "columns": []
+        },
+        "vpn": {
+            "name": "VPN.csv",
+            "format": "csv",
+            "columns": []
+        },
+        "personal_info": {
+            "name": "INFORME_PERSONAL.xlsx",
+            "format": "xlsx",
+            "columns": []
+        }
     }
-
 }

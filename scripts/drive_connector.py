@@ -10,6 +10,15 @@ class DriveConnector:
         self.logger = logger
         self.source_folder = Path(source_folder)
 
+    def authenticate(self) -> None:
+        pass
+
+    def list_files(self, folder_id: str) -> List[str]:
+        return []
+    
+    def download_file(self, file_id: str, destination: Path) -> None:
+        pass
+
     def download_files(self, required_files: List[str], destination: Path) -> None:
         destination = Path(destination)
         destination.mkdir(parents=True, exist_ok=True)

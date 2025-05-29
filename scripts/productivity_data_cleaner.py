@@ -11,17 +11,17 @@ columns_name = ['Email',
                 'Other added files',
                 ]
 
-class CleanMainFile:
+class GoogleProductivityDataCleaner:
 
-    def __init__(self, path: str, year: int, month: int, emails_to_delete: list[str], logger=None):
-        self.input_name = path + "Productividad_Google.xlsx"
+    def __init__(self, path: str, file_name: str, year: int, month: int, emails_to_delete: list[str], logger=None):
+        self.input_name = path + file_name
         self.year = year
         self.month = month
         self.clean_data_file = path + "data_cleaned.xlsx"
         self.emails_to_delete = emails_to_delete
         self.logger = logger
         
-    def clear_data(self) -> str:
+    def clean_data(self) -> str:
 
         excel_file = pd.ExcelFile(self.input_name)
         last_sheet = excel_file.sheet_names[-1]
