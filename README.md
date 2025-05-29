@@ -47,7 +47,7 @@ El backend es responsable de recopilar, limpiar y procesar datos de diversas fue
 
 ### Scripts Clave y Flujo de Trabajo
 
-1.  **`scripts/main_advanced.py`**: Este script orquesta todo el pipeline de procesamiento de datos.
+1.  **`scripts/main.py`**: Este script orquesta todo el pipeline de procesamiento de datos.
     *   Se presume que primero llama a `scripts/clean_main_file.py` (aunque su contenido específico no se detalla aquí, su nombre sugiere un rol en el preprocesamiento o limpieza de un conjunto de datos inicial).
     *   Después del preprocesamiento, ejecuta `scripts/calculate_productivity.py` para realizar los cálculos centrales de productividad.
 
@@ -84,8 +84,8 @@ Esta sección proporciona instrucciones sobre cómo configurar y ejecutar el pro
     pip install pandas xlsxwriter
     ```
 *   **Archivos de Datos de Entrada:**
-    *   Todos los archivos de Excel (`.xlsx`) y CSV (`.csv`) de entrada detallados en la sección "Backend y Procesamiento de Datos" (por ejemplo, `Autodesk.xlsx`, `Meetings.xlsx`, `chats_source.csv`, `VPN.csv`, `INFORME_PERSONAL.xlsx`, y el archivo de datos inicial limpiado) deben estar presentes.
-    *   Estos archivos deben ubicarse en la estructura de directorios esperada por los scripts, que típicamente es `C:\Productividad\{YEAR}-{MONTH}\` (reemplace `{YEAR}` y `{MONTH}` con el año y mes reales de los datos que se están procesando). Ajuste las rutas en `scripts/initial_parameters.json` si su estructura difiere.
+    *   Todos los archivos de Excel (`.xlsx`) y CSV (`.csv`) de entrada detallados en la sección "Backend y Procesamiento de Datos" (por ejemplo, `Autodesk.xlsx`, `Meetings.xlsx`, `chats_source.csv`, `VPN.csv`, `INFORME_PERSONAL.xlsx`, y el archivo de datos inicial limpiado) deben estar disponibles en la carpeta de Drive configurada.
+    *   Durante la ejecución estos archivos se descargarán automáticamente a una carpeta temporal antes de ser procesados.
 
 ### 2. Procesamiento de Datos (Backend)
 
@@ -100,12 +100,12 @@ Esta sección proporciona instrucciones sobre cómo configurar y ejecutar el pro
     *   Navegue al directorio raíz del proyecto en su terminal.
     *   Ejecute el script de procesamiento principal:
         ```bash
-        python scripts/main_advanced.py
+        python scripts/main.py
         ```
     *   Este script realizará la limpieza de datos (implícitamente a través de `scripts/clean_main_file.py`) y luego calculará la productividad (a través de `scripts/calculate_productivity.py`).
 
 3.  **Revisar Salidas:**
-    *   Tras una ejecución exitosa, el script generará archivos de salida en el directorio relevante `C:\Productividad\{YEAR}-{MONTH}\` (o la ruta de salida configurada).
+    *   Tras una ejecución exitosa, el script generará archivos de salida en la carpeta temporal utilizada durante el proceso.
     *   Los archivos de salida clave incluyen:
         *   `productivity_by_day.xlsx`: Puntuaciones de productividad diarias.
         *   `final_table_with_results.xlsx`: Resultados de productividad mensuales agregados.
@@ -134,7 +134,7 @@ El repositorio está organizado en varios directorios clave:
     -   `dashboard.js`: El archivo JavaScript central que contiene la aplicación React y la lógica de los gráficos.
     -   `styles.css`: Estilos CSS para el dashboard.
 -   **`scripts/`**: Alberga los scripts de Python responsables del procesamiento de datos y los cálculos de productividad.
-    -   `main_advanced.py`: Orquesta el flujo de trabajo de limpieza de datos y cálculo.
+    -   `main.py`: Orquesta el flujo de trabajo de limpieza de datos y cálculo.
     -   `calculate_productivity.py`: Realiza los cálculos centrales de productividad basados en diversas entradas y pesos configurados.
     -   `clean_main_file.py`: (Asumido) Maneja el preprocesamiento y la limpieza de los datos iniciales.
     -   `initial_parameters.json`: Archivo de configuración para los scripts del backend, que define el período de procesamiento, las rutas de los archivos y los coeficientes de ponderación de actividades.

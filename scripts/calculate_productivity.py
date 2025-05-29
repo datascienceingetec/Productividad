@@ -5,11 +5,12 @@ from calendar import monthrange
 
 class CalculateProductivity:
 
-    def __init__(self, path: str, year: int, month: int, coefficients: dict) -> None:
+    def __init__(self, path: str, year: int, month: int, coefficients: dict, logger=None) -> None:
         # inputs
         self.year = year
         self.month = month
         self.input_filename = path + "data_cleaned.xlsx"
+        self.logger = logger
         
         # last day of the month
         self.last_day_of_month = monthrange(year, month)[1]
@@ -42,8 +43,12 @@ class CalculateProductivity:
         self.df_employees = self.df_employees[[True if email.split('@')[1] == 'ingetec.com.co' else False for email in self.df_employees['Email']]]
         self.df_employees['Cat'] = self.df_employees['Cat'].apply(lambda cat: str(cat)[0:2] if bool(re.search(r'\d', str(cat))) else str(cat)[0:2])
         self.df_employees.reset_index(drop=True, inplace=True)
+        if self.logger:
+            self.logger.info("Employee data loaded")
         
     def calculate_productivity(self) -> str:
+        if self.logger:
+            self.logger.info("Calculating productivity")
 
         df_autodesk_complete = self.process_autodesk_by_day() # When I have generated data exactly of 30 days
         # df_autodesk_complete = self.process_autodesk_average() # When I just have a monthly average
@@ -61,9 +66,10 @@ class CalculateProductivity:
             df_productivity_day = pd.read_excel(self.input_filename, sheet_name=sheet_name)
 
             # create a date object
-            date = sheet_name.split('-')
-            print(date)
-            date = datetime.datetime(int(date[0]), int(date[1]), int(date[2]))
+            date_parts = sheet_name.split('-')
+            if self.logger:
+                self.logger.info(f"Processing sheet {sheet_name}")
+            date = datetime.datetime(int(date_parts[0]), int(date_parts[1]), int(date_parts[2]))
 
             # format the date object
             formatted_date = date.strftime("%Y-%m-%d")
@@ -129,6 +135,8 @@ class CalculateProductivity:
 
         # Save the Excel file.
         writer.close()
+        if self.logger:
+            self.logger.info(f"Productivity by day saved to {self.productivity_by_day_filename}")
         return self.productivity_by_day_filename
 
     def process_meetings(self) -> pd.DataFrame:
@@ -316,4 +324,6 @@ class CalculateProductivity:
             results_df[day.split('-')[2]] = df_day['Productivity']
         
         results_df.to_excel(self.final_table_with_results, index=False)
+        if self.logger:
+            self.logger.info(f"Final table saved to {self.final_table_with_results}")
         return results_df
