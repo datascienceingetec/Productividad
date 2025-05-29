@@ -20,8 +20,6 @@ wheels/
 .installed.cfg
 *.egg
 
-scripts/sample_data/
-
 # Virtual Environment
 .venv/
 venv/
@@ -40,6 +38,7 @@ ENV/
 
 # Environment variables
 .env
+credentials.json
 
 # Logs and databases
 *.log
