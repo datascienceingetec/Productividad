@@ -46,7 +46,7 @@ class CalculateProductivity:
     def calculate_productivity(self) -> str:
 
         df_autodesk_complete = self.process_autodesk_by_day() # When I have generated data exactly of 30 days
-        # df_autodesk_complete = self.process_autodesk_average() # When I just have a montly average
+        # df_autodesk_complete = self.process_autodesk_average() # When I just have a monthly average
         df_meetings_complete = self.process_meetings()
         df_chats_complete = self.process_chats()
         df_vpn_complete = self.process_vpn()  # Process VPN data
