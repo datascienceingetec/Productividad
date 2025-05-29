@@ -25,7 +25,7 @@ class CleanMainFile:
         excel_file = pd.ExcelFile(self.input_name)
         last_sheet = excel_file.sheet_names[-1]
 
-        #Reference of last day of the month because the list of could vary throughout the current month
+        # Reference the last day of the month because the list of employees can vary during the month
         df_reference_last_day_of_month = pd.read_excel(self.input_name, sheet_name=last_sheet)
         df_reference_last_day_of_month = df_reference_last_day_of_month.filter(['Usuario'])
         df_reference_last_day_of_month.columns = ["Email"]
