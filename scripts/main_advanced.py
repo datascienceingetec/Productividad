@@ -1,11 +1,14 @@
 from scripts.clean_main_file import CleanMainFile
 from scripts.calculate_productivity import CalculateProductivity
 import json
+import os
+
 
 print("Starting the script")
 
-# read the json file
-with open("initial_parameters.json", "r") as infile:
+# read the json file relative to this script's location
+parameters_path = os.path.join(os.path.dirname(__file__), "initial_parameters.json")
+with open(parameters_path, "r") as infile:
     data = json.load(infile)
 
 # extract the required data
