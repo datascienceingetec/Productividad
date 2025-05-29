@@ -3,28 +3,26 @@ import datetime
 import re
 from calendar import monthrange
 
-class CalculateProductivity:
+class DataProcessor:
 
-    def __init__(self, path: str, year: int, month: int, coefficients: dict) -> None:
+    def __init__(self, path: str, required_files: dict, year: int, month: int, coefficients: dict, logger=None) -> None:
         # inputs
         self.year = year
         self.month = month
-        self.input_filename = path + "data_cleaned.xlsx"
+        self.logger = logger
+        self.google_productivity_path = path + "data_cleaned.xlsx"
+        self.autodesk_path = path + required_files.get("autodesk")['name']
+        self.meetings_path = path + required_files.get("meetings")['name']
+        self.chats_source_path = path + required_files.get("chats")['name']
+        self.personal_info_path = path + required_files.get("personal_info")['name']
+        self.vpn_path = path + required_files.get("vpn")['name']
         
         # last day of the month
         self.last_day_of_month = monthrange(year, month)[1]
         self.last_day_of_month = f"{year}-{month:02d}-{self.last_day_of_month:02d}" 
         
         # outputs
-        self.autodesk_filename = path + "Autodesk.xlsx"
-        self.meetings_filename = path + "Meetings.xlsx"
         self.productivity_by_day_filename = path + "productivity_by_day.xlsx"
-        self.chats_source_filename = path + "chats_source.csv"
-        self.informe_personal_filename = path + "INFORME_PERSONAL.xlsx"
-        self.final_table_with_results = path + "final_table_with_results.xlsx"
-        self.vpn = path + "VPN.csv"  # Add this line for VPN data
-        
-        self.excel_file = pd.ExcelFile(self.input_filename)
 
         # Coefficients for each activity
         self.productivity_columns = list(coefficients['productivity_coefficients_modelers'].keys())
@@ -33,7 +31,7 @@ class CalculateProductivity:
         self.productivity_coefficients_others = pd.Series(coefficients['productivity_coefficients_others'])
 
         #create a sort and clean employee's list with Email and Cat[dd] . Consider only ingetec.com.co emails and unique values 
-        self.df_employees = pd.read_excel(self.informe_personal_filename)
+        self.df_employees = pd.read_excel(self.personal_info_path)
         self.df_employees['Email'] = self.df_employees['Email'].str.lower() 
         self.df_employees.dropna(subset=['Email', 'Cat'], inplace=True)
         self.df_employees.drop_duplicates(subset=['Email'], inplace=True, keep='first')
@@ -42,8 +40,12 @@ class CalculateProductivity:
         self.df_employees = self.df_employees[[True if email.split('@')[1] == 'ingetec.com.co' else False for email in self.df_employees['Email']]]
         self.df_employees['Cat'] = self.df_employees['Cat'].apply(lambda cat: str(cat)[0:2] if bool(re.search(r'\d', str(cat))) else str(cat)[0:2])
         self.df_employees.reset_index(drop=True, inplace=True)
+        if self.logger:
+            self.logger.info("Employee data loaded")
         
     def calculate_productivity(self) -> str:
+        if self.logger:
+            self.logger.info("Calculating productivity")
 
         df_autodesk_complete = self.process_autodesk_by_day() # When I have generated data exactly of 30 days
         # df_autodesk_complete = self.process_autodesk_average() # When I just have a monthly average
@@ -51,88 +53,88 @@ class CalculateProductivity:
         df_chats_complete = self.process_chats()
         df_vpn_complete = self.process_vpn()  # Process VPN data
         df_coefficients_matrix = self.estimate_productivity_matrix()
+        excel_file = pd.ExcelFile(self.google_productivity_path)
 
         # Create a Pandas Excel writer using XlsxWriter as the engine.
-        writer = pd.ExcelWriter(self.productivity_by_day_filename, engine='xlsxwriter')
+        with pd.ExcelWriter(self.productivity_by_day_filename, engine='xlsxwriter') as writer:
+            # Loop through each sheet name
+            for sheet_name in excel_file.sheet_names:
+                # Read in the sheet as a DataFrame
+                df_productivity_day = pd.read_excel(self.google_productivity_path, sheet_name=sheet_name)
 
-        # Loop through each sheet name
-        for sheet_name in self.excel_file.sheet_names:
-            # Read in the sheet as a DataFrame
-            df_productivity_day = pd.read_excel(self.input_filename, sheet_name=sheet_name)
+                # create a date object
+                date_parts = sheet_name.split('-')
+                if self.logger:
+                    self.logger.info(f"Processing sheet {sheet_name}")
+                date = datetime.datetime(int(date_parts[0]), int(date_parts[1]), int(date_parts[2]))
 
-            # create a date object
-            date = sheet_name.split('-')
-            print(date)
-            date = datetime.datetime(int(date[0]), int(date[1]), int(date[2]))
+                # format the date object
+                formatted_date = date.strftime("%Y-%m-%d")
 
-            # format the date object
-            formatted_date = date.strftime("%Y-%m-%d")
+                #Analyzing files behavior
+                new_column = df_productivity_day['Added files'] + df_productivity_day['Other added files']
+                df_productivity_day.insert(9, 'Add files', [1 if x > 0 else 0 for x in new_column])
+                df_productivity_day.drop(['Added files', 'Other added files'], axis=1, inplace=True)
+                df_productivity_day['Drive last use'] = [1 if str(datestamp).split('T')[0] == formatted_date else 0 for datestamp in df_productivity_day['Drive last use']]
+                df_productivity_day['Edited files'] = [1 if x > 0 else 0 for x in df_productivity_day['Edited files']]
+                df_productivity_day['Viewed files'] = [1 if x > 0 else 0 for x in df_productivity_day['Viewed files']]
 
-            #Analyzing files behavior
-            new_column = df_productivity_day['Added files'] + df_productivity_day['Other added files']
-            df_productivity_day.insert(9, 'Add files', [1 if x > 0 else 0 for x in new_column])
-            df_productivity_day.drop(['Added files', 'Other added files'], axis=1, inplace=True)
-            df_productivity_day['Drive last use'] = [1 if str(datestamp).split('T')[0] == formatted_date else 0 for datestamp in df_productivity_day['Drive last use']]
-            df_productivity_day['Edited files'] = [1 if x > 0 else 0 for x in df_productivity_day['Edited files']]
-            df_productivity_day['Viewed files'] = [1 if x > 0 else 0 for x in df_productivity_day['Viewed files']]
+                #Analyzing email behavior
+                df_productivity_day['Email last use'] = [1 if str(datestamp).split('T')[0] == formatted_date else 0 for datestamp in df_productivity_day['Email last use']]
+                df_productivity_day['Sent emails'] = [1 if x > 0 else 0 for x in df_productivity_day['Sent emails']]
 
-            #Analyzing email behavior
-            df_productivity_day['Email last use'] = [1 if str(datestamp).split('T')[0] == formatted_date else 0 for datestamp in df_productivity_day['Email last use']]
-            df_productivity_day['Sent emails'] = [1 if x > 0 else 0 for x in df_productivity_day['Sent emails']]
+                # Additional columns
+                # CHATS
+                df_chats = pd.DataFrame()
+                df_chats['Email'] = df_chats_complete['Email']
+                df_chats['Chat'] = [1 if x > 0 else 0 for x in df_chats_complete[formatted_date]]
+                df_productivity_day = pd.merge(df_productivity_day, df_chats, on='Email', how='left')
+                df_productivity_day.fillna(0, inplace=True)
 
-            # Additional columns
-            # CHATS
-            df_chats = pd.DataFrame()
-            df_chats['Email'] = df_chats_complete['Email']
-            df_chats['Chat'] = [1 if x > 0 else 0 for x in df_chats_complete[formatted_date]]
-            df_productivity_day = pd.merge(df_productivity_day, df_chats, on='Email', how='left')
-            df_productivity_day.fillna(0, inplace=True)
+                # MEETINGS
+                df_meetings = pd.DataFrame()
+                df_meetings['Email'] = df_meetings_complete['Email']
+                df_meetings['Meetings'] = [1 if x > 0 else 0 for x in df_meetings_complete[formatted_date]]
+                df_productivity_day = pd.merge(df_productivity_day, df_meetings, on='Email', how='left')
+                df_productivity_day.fillna(0, inplace=True)
 
-            # MEETINGS
-            df_meetings = pd.DataFrame()
-            df_meetings['Email'] = df_meetings_complete['Email']
-            df_meetings['Meetings'] = [1 if x > 0 else 0 for x in df_meetings_complete[formatted_date]]
-            df_productivity_day = pd.merge(df_productivity_day, df_meetings, on='Email', how='left')
-            df_productivity_day.fillna(0, inplace=True)
+                # AUTODESK
+                df_autodesk = pd.DataFrame()
+                df_autodesk['Email'] = df_autodesk_complete['Email']
+                df_autodesk['Autodesk'] = [1 if x > 0 else 0 for x in df_autodesk_complete[formatted_date]]
+                df_productivity_day = pd.merge(df_productivity_day, df_autodesk, on='Email', how='left')
+                df_productivity_day.fillna(0, inplace=True)
 
-            # AUTODESK
-            df_autodesk = pd.DataFrame()
-            df_autodesk['Email'] = df_autodesk_complete['Email']
-            df_autodesk['Autodesk'] = [1 if x > 0 else 0 for x in df_autodesk_complete[formatted_date]]
-            df_productivity_day = pd.merge(df_productivity_day, df_autodesk, on='Email', how='left')
-            df_productivity_day.fillna(0, inplace=True)
-
-            # VPN - Add this section
-            df_vpn = pd.DataFrame()
-            df_vpn['Email'] = df_vpn_complete['Email']
-            df_vpn['VPN'] = [1 if x > 0 else 0 for x in df_vpn_complete.get(formatted_date, [0] * len(df_vpn_complete))]
-            df_productivity_day = pd.merge(df_productivity_day, df_vpn, on='Email', how='left')
-            df_productivity_day.fillna(0, inplace=True)
+                # VPN - Add this section
+                df_vpn = pd.DataFrame()
+                df_vpn['Email'] = df_vpn_complete['Email']
+                df_vpn['VPN'] = [1 if x > 0 else 0 for x in df_vpn_complete.get(formatted_date, [0] * len(df_vpn_complete))]
+                df_productivity_day = pd.merge(df_productivity_day, df_vpn, on='Email', how='left')
+                df_productivity_day.fillna(0, inplace=True)
 
 
-            # delete emails that are not in both dataframes
-            emails_to_delete_in_coefficient = list(df_coefficients_matrix[~df_coefficients_matrix['Email'].isin(df_productivity_day['Email'])]['Email'])
-            emails_to_delete_in_productivity = list(df_productivity_day[~df_productivity_day['Email'].isin(df_coefficients_matrix['Email'])]['Email'])
-            df_coefficients_matrix = df_coefficients_matrix[~df_coefficients_matrix['Email'].isin(emails_to_delete_in_coefficient)]
-            df_productivity_day = df_productivity_day[~df_productivity_day['Email'].isin(emails_to_delete_in_productivity)]
+                # delete emails that are not in both dataframes
+                emails_to_delete_in_coefficient = list(df_coefficients_matrix[~df_coefficients_matrix['Email'].isin(df_productivity_day['Email'])]['Email'])
+                emails_to_delete_in_productivity = list(df_productivity_day[~df_productivity_day['Email'].isin(df_coefficients_matrix['Email'])]['Email'])
+                df_coefficients_matrix = df_coefficients_matrix[~df_coefficients_matrix['Email'].isin(emails_to_delete_in_coefficient)]
+                df_productivity_day = df_productivity_day[~df_productivity_day['Email'].isin(emails_to_delete_in_productivity)]
 
-            # Prepare dataframes to be multiplied
-            df_coefficients_matrix.reset_index(inplace=True, drop=True)
-            df_productivity_day.reset_index(inplace=True, drop=True)
-            productivity = df_productivity_day.iloc[:, 2:12] * df_coefficients_matrix.iloc[:, 2:12]
-            productivity['Productivity'] = productivity.sum(axis=1)
-            productivity['Productivity'] = [1 if x > 1 else x for x in productivity['Productivity']]
-            productivity.insert(0, 'Email', df_productivity_day['Email'])
-            productivity.insert(1, 'Username', df_productivity_day['Username'])
-            productivity.insert(1, 'Cat', df_coefficients_matrix['Cat'])
-            productivity.to_excel(writer, sheet_name=sheet_name, index=False)
-
-        # Save the Excel file.
-        writer.close()
+                # Prepare dataframes to be multiplied
+                df_coefficients_matrix.reset_index(inplace=True, drop=True)
+                df_productivity_day.reset_index(inplace=True, drop=True)
+                productivity = df_productivity_day.iloc[:, 2:12] * df_coefficients_matrix.iloc[:, 2:12]
+                productivity['Productivity'] = productivity.sum(axis=1)
+                productivity['Productivity'] = [1 if x > 1 else x for x in productivity['Productivity']]
+                productivity.insert(0, 'Email', df_productivity_day['Email'])
+                productivity.insert(1, 'Username', df_productivity_day['Username'])
+                productivity.insert(1, 'Cat', df_coefficients_matrix['Cat'])
+                productivity.to_excel(writer, sheet_name=sheet_name, index=False)
+        if self.logger:
+            self.logger.info(f"Productivity by day saved to {self.productivity_by_day_filename}")
         return self.productivity_by_day_filename
 
     def process_meetings(self) -> pd.DataFrame:
-        df = pd.read_excel(self.meetings_filename)
+        df = pd.read_excel(self.meetings_path)
 
         # create a dataframe with only the columns we need
         df_meet = pd.DataFrame(data=df, columns=['Fecha', 'Actor', 'Código de reunión'])
@@ -164,7 +166,7 @@ class CalculateProductivity:
 
     def estimate_productivity_matrix(self) -> pd.DataFrame:
         # This is the list of autodesk users that are also in the employee list
-        autodesk_user_list = list(pd.read_excel(self.autodesk_filename, sheet_name='Autodesk users')['Email'].str.lower())
+        autodesk_user_list = list(pd.read_excel(self.autodesk_path, sheet_name='Autodesk users')['Email'].str.lower())
         autodesk_user_list = list(set(autodesk_user_list) - (set(autodesk_user_list) - set(self.df_employees['Email'])))
         autodesk_user_list.sort()
         
@@ -185,7 +187,7 @@ class CalculateProductivity:
         return df_productivity
 
     def process_chats(self) -> pd.DataFrame:
-        df = pd.read_csv(self.chats_source_filename)
+        df = pd.read_csv(self.chats_source_path)
 
         df['day'] = [str(fecha).split("T")[0] for fecha in df['Fecha']]
         df['hour'] = [str(fecha).split("T")[1][0:2] for fecha in df['Fecha']]
@@ -204,7 +206,7 @@ class CalculateProductivity:
         return df_chats
 
     def process_autodesk_by_day(self) -> pd.DataFrame:
-        df_autodesk = pd.read_excel(self.autodesk_filename, sheet_name='Uso', usecols=[4,9])
+        df_autodesk = pd.read_excel(self.autodesk_path, sheet_name='Uso', usecols=[4,9])
             
         df_autodesk['email'] = [str(email).lower() for email in df_autodesk['email']]
         df_autodesk.rename(columns={'email': 'Email'}, inplace=True)
@@ -229,7 +231,7 @@ class CalculateProductivity:
         return df_autodesk_table
     
     def process_autodesk_average(self) -> pd.DataFrame:
-        df_autodesk = pd.read_excel(self.autodesk_filename, sheet_name='Detalles del usuario')
+        df_autodesk = pd.read_excel(self.autodesk_path, sheet_name='Detalles del usuario')
         df_autodesk = df_autodesk[['email', 'monthly_average']]
         df_autodesk['email'] = df_autodesk['email'].str.lower()
         df_autodesk = df_autodesk.groupby(['email']).sum().reset_index()
@@ -246,7 +248,7 @@ class CalculateProductivity:
 
     def process_vpn(self) -> pd.DataFrame:
         
-        df = pd.read_csv(self.vpn, encoding='utf-8')
+        df = pd.read_csv(self.vpn_path, encoding='utf-8')
         
         # Rename columns to match our needs
         df.columns = ['Usuario', 'IP', 'Trafico_Salida', 'Fecha']
@@ -299,8 +301,7 @@ class CalculateProductivity:
         
         return pivot_table_binary
 
-    def final_table(self) -> pd.DataFrame:
-        
+    def get_results(self) -> pd.DataFrame:
         # Load the Excel file into a pandas ExcelFile object
         xlsx = pd.ExcelFile(self.productivity_by_day_filename)
 
@@ -314,6 +315,5 @@ class CalculateProductivity:
             employees_to_delete = list(set(dfs[day]['Email']) - set(results_df['Email']))
             df_day = dfs[day][~dfs[day]['Email'].isin(employees_to_delete)].reset_index(drop=True)
             results_df[day.split('-')[2]] = df_day['Productivity']
-        
-        results_df.to_excel(self.final_table_with_results, index=False)
+
         return results_df
