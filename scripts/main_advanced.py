@@ -1,5 +1,5 @@
-from clean_main_file import CleanMainFile
-from calculate_productivity import CalculateProductivity
+from scripts.clean_main_file import CleanMainFile
+from scripts.calculate_productivity import CalculateProductivity
 import json
 
 print("Starting the script")
