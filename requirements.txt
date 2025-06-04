@@ -12,6 +12,8 @@ tqdm>=4.62.0  # Progress bars
 pytest>=6.2.5  # Testing
 flake8>=4.0.0  # Linting
 fastapi>=0.85
+pydantic-settings==2.9.1
+python-dotenv==1.1.0
 uvicorn>=0.20
 SQLAlchemy>=1.4
 google-api-python-client>=2.0.0
