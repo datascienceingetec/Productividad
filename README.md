@@ -159,15 +159,3 @@ Para obtener información detallada sobre cómo contribuir, por favor consulte e
 -   Flujo de trabajo general de desarrollo (General development workflow)
 
 Adherirse a estas directrices ayudará a asegurar un proceso de colaboración fluido y efectivo.
-
-## Licencia
-
-Este proyecto no cuenta actualmente con una licencia. Esto significa que se aplican las leyes de derechos de autor estándar, y el uso, distribución o modificación por parte de terceros puede estar restringido.
-
-Se recomienda encarecidamente añadir un archivo `LICENSE` al repositorio para clarificar los términos bajo los cuales este software puede ser utilizado, modificado y distribuido.
-
-Si se desea una licencia de código abierto, una opción común es la Licencia MIT (MIT License). Si se adoptara la Licencia MIT, se podría incluir una insignia como esta en el README:
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
-Por favor, considere añadir un archivo `LICENSE` para definir los términos de uso del proyecto.
