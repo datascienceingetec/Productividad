@@ -148,8 +148,6 @@ El repositorio está organizado en varios directorios clave:
 
 ## Contribuciones
 
-¡Las contribuciones al proyecto IngetecProductivity son bienvenidas!
-
 Para obtener información detallada sobre cómo contribuir, por favor consulte el archivo `CONTRIBUTING.md`. Este documento incluye directrices sobre:
 
 -   Estrategia de creación de ramas (Branching strategy)
