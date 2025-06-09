@@ -1,6 +1,6 @@
-# IngetecProductivity
+# APP Productividad
 
-IngetecProductivity es un proyecto diseñado para calcular y visualizar la productividad de los empleados. Esto se logra mediante:
+Este es un proyecto diseñado para calcular y visualizar la productividad de los empleados. Esto se logra mediante:
 
 - **Recopilación de datos de diversas fuentes:** Esto incluye el uso de Autodesk, registros de reuniones, registros de chat, actividad de VPN e interacciones con otros archivos.
 - **Ponderación de actividades:** El sistema permite asignar diferentes pesos a distintas actividades, reflejando su importancia relativa en las métricas generales de productividad.
